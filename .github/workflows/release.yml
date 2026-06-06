@@ -1,0 +1,77 @@
+on:
+  release:
+    types:
+      - created
+permissions:
+  contents: write
+jobs:
+  linux_windows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux and Windows Cross Compilers
+        run: sudo apt-get install --yes --no-install-recommends musl-tools gcc-mingw-w64-x86-64-win32
+
+      - name: Install rustup targets
+        run: rustup target add x86_64-unknown-linux-musl x86_64-pc-windows-gnu
+
+      - name: Extract version
+        id: version
+        run: echo "tag=$(grep '^version' cup/Cargo.toml | head -1 | sed 's/version = \"\(.*\)\"/\1/')" >> "$GITHUB_OUTPUT"
+
+      - name: Build the executables
+        run: cargo build --release --target x86_64-unknown-linux-musl --target x86_64-pc-windows-gnu -p cupcli -p ramcli
+
+      - name: Bundle Linux x86_64
+        run: tar -czvf neoutils-linux-x86_64-${{ steps.version.outputs.tag }}.tar.gz -C target/x86_64-unknown-linux-musl/release cupcli ramcli
+
+      - name: Bundle Windows x86_64
+        run: zip -j neoutils-windows-x86_64-${{ steps.version.outputs.tag }}.zip target/x86_64-pc-windows-gnu/release/cupcli.exe target/x86_64-pc-windows-gnu/release/ramcli.exe
+
+      - name: Generate SHA256 checksums
+        run: |
+          shasum -a 256 neoutils-linux-x86_64-${{ steps.version.outputs.tag }}.tar.gz > neoutils-linux-x86_64-${{ steps.version.outputs.tag }}.tar.gz.sha256
+          shasum -a 256 neoutils-windows-x86_64-${{ steps.version.outputs.tag }}.zip > neoutils-windows-x86_64-${{ steps.version.outputs.tag }}.zip.sha256
+
+      - name: Upload release binaries
+        uses: alexellis/upload-assets@0.4.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["neoutils-linux-x86_64-${{ steps.version.outputs.tag }}.tar.gz", "neoutils-windows-x86_64-${{ steps.version.outputs.tag }}.zip", "neoutils-linux-x86_64-${{ steps.version.outputs.tag }}.tar.gz.sha256", "neoutils-windows-x86_64-${{ steps.version.outputs.tag }}.zip.sha256"]'
+
+  mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Install rustup targets
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+
+      - name: Extract version
+        id: version
+        run: echo "tag=$(grep '^version' cup/Cargo.toml | head -1 | sed 's/version = \"\(.*\)\"/\1/')" >> "$GITHUB_OUTPUT"
+
+      - name: Build the executables
+        run: cargo build --release --target=x86_64-apple-darwin --target=aarch64-apple-darwin -p cupcli -p ramcli
+
+      - name: Bundle macOS x86_64
+        run: tar -czvf neoutils-mac-x86_64-${{ steps.version.outputs.tag }}.tar.gz -C target/x86_64-apple-darwin/release cupcli ramcli
+
+      - name: Bundle macOS aarch64
+        run: tar -czvf neoutils-mac-aarch64-${{ steps.version.outputs.tag }}.tar.gz -C target/aarch64-apple-darwin/release cupcli ramcli
+
+      - name: Generate SHA256 checksums
+        run: |
+          shasum -a 256 neoutils-mac-x86_64-${{ steps.version.outputs.tag }}.tar.gz > neoutils-mac-x86_64-${{ steps.version.outputs.tag }}.tar.gz.sha256
+          shasum -a 256 neoutils-mac-aarch64-${{ steps.version.outputs.tag }}.tar.gz > neoutils-mac-aarch64-${{ steps.version.outputs.tag }}.tar.gz.sha256
+
+      - name: Upload release binaries
+        uses: alexellis/upload-assets@0.4.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["neoutils-mac-x86_64-${{ steps.version.outputs.tag }}.tar.gz", "neoutils-mac-x86_64-${{ steps.version.outputs.tag }}.tar.gz.sha256", "neoutils-mac-aarch64-${{ steps.version.outputs.tag }}.tar.gz", "neoutils-mac-aarch64-${{ steps.version.outputs.tag }}.tar.gz.sha256"]'
