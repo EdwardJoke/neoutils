@@ -1,0 +1,34 @@
+repos:
+  - repo: local
+    hooks:
+      - id: cargo-clippy cup
+        name: cargo clippy (release)
+        description: Run clippy with --release and deny warnings
+        entry: cd cup; cargo clippy --release --all-targets -- -D warnings
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: cargo-clippy ram
+        name: cargo clippy (release)
+        description: Run clippy with --release and deny warnings
+        entry: cd ram; cargo clippy --release --all-targets -- -D warnings
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: cargo-fmt cup
+        name: cargo fmt (cup)
+        description: Format Rust source files
+        entry: cd cup; cargo fmt
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: cargo-fmt ram
+        name: cargo fmt (ram)
+        description: Format Rust source files
+        entry: cd ram; cargo fmt
+        language: system
+        pass_filenames: false
+        always_run: true
