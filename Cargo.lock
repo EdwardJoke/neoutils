@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "neoutils"
-version = "0.1.0"
+version = "26.4.0"
 dependencies = [
  "clap",
  "crossterm",
