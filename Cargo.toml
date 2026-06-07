@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["cup","ram"]
+members = ["cup", "nav","ram"]
 
 [profile.release]
 lto = true
