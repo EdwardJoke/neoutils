@@ -1,0 +1,12 @@
+[package]
+name = "neoutils"
+version = "0.1.0"
+edition = "2024"
+description = "Neoutils is the installer for the Neoutils project"
+authors = ["EdwardJoke"]
+license = "Apache-2.0"
+
+[dependencies]
+clap = { version = "4.6.1", features = ["derive"] }
+crossterm = "0.29.0"
+ratatui = "0.30.1"
